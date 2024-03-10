@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  export let content: string[];
+  export let title: string = "";
+  export let content: (string | { text: string, isURL: boolean })[];
   export let position: { x: number; y: number };
   export let width: number = 20;
   export let height: number = 20;
@@ -90,37 +91,46 @@
   }}
 >
   <div class="windowHeader" on:mousedown={dragStart}>
-    <svg
-      class="svgIcon"
-      height="20"
-      width="20"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle r="10" cx="10" cy="10" fill="red" />
-    </svg>
-    <svg
-      class="svgIcon"
-      height="20"
-      width="20"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle r="10" cx="10" cy="10" fill="yellow" />
-    </svg>
-    <svg
-      class="svgIcon"
-      height="20"
-      width="20"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle r="10" cx="10" cy="10" fill="green" />
-    </svg>
+    <div class="windowHeaderTitle">
+      <h3>{title}</h3>
+    </div>
+    <div class="icons">
+      <svg
+        class="svgIcon"
+        height="20"
+        width="20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle r="10" cx="10" cy="10" fill="red" />
+      </svg>
+      <svg
+        class="svgIcon"
+        height="20"
+        width="20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle r="10" cx="10" cy="10" fill="yellow" />
+      </svg>
+      <svg
+        class="svgIcon"
+        height="20"
+        width="20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle r="10" cx="10" cy="10" fill="green" />
+      </svg>
+    </div>
   </div>
   <div class="windowContent">
     {#each content as item}
-      <p>{item}</p>
+      {#if typeof item == 'string' || !item.isURL}
+        <p>{item}</p>
+      {:else}
+        <p><a href={item.text} target="_blank">{item.text}</a></p>
+      {/if}
+      
     {/each}
-    <!-- <p>Egor Filonov</p>
-    <p>Software Engineer</p> -->
+
   </div>
 </div>
 <svelte:window on:mouseup={dragEnd} on:mousemove={dragMove} />
@@ -141,15 +151,19 @@
 
   .windowHeader {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
     height: 40px;
     background-color: rgba(20, 20, 20, 0.5);
   }
 
-  .svgIcon {
+  .windowHeaderTitle {
     margin-left: 10px;
+  }
+
+  .icons {
+    margin-right: 10px;
   }
 
   .windowContent {
@@ -158,12 +172,12 @@
     user-select: var(--isTextSelectable);
   }
 
-  .windowContent > p {
+  .windowContent > * {
     max-width: min-content;
     margin: 0 !important;
   }
 
-  .windowContent p {
+  .windowContent * {
     width: 0;
     overflow: hidden; /* Ensures the content is not revealed until the animation */
     border-right: 0.15em solid orange; /* The typwriter cursor */
@@ -175,14 +189,8 @@
 
   .windowContent > * {
     animation:
-      typing 3s steps(40, end) forwards,
+      typing 3s steps(80, end) forwards,
       blink-caret 0.75s step-end forwards;
-  }
-
-  .windowContent > :last-child {
-    animation:
-      typing 3s steps(40, end) forwards,
-      blink-caret 0.75s step-end infinite;
   }
 
   @keyframes typing {
